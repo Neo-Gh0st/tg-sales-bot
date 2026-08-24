@@ -156,13 +156,17 @@ def admin_handle(u):
                 with open(ZIP_PATH, "rb") as f:
                     requests.post(f"{SALES_API}/sendDocument",
                         data={"chat_id": buyer,
-                              "caption": "🎉 Спасибо за покупку! Внутри 10 схем + исходники + инструкция."},
-                        files={"document": ("1c-skd-reports-pack.zip", f)}, timeout=60)
+                              "caption": "🎉 Спасибо за покупку! Внутри 20 workflow + инструкция по установке."},
+                        files={"document": ("n8n-automations-pack.zip", f)}, timeout=60)
+            else:
+                api(SALES_API, "sendDocument", chat_id=buyer, document=ZIP_URL,
+                    caption="🎉 Спасибо за покупку! Внутри 20 workflow + инструкция по установке.")
                 log = load_json(SALES_LOG, {"sales": 0})
                 log["sales"] = log.get("sales", 0) + 1
                 save_json(SALES_LOG, log)
                 api(ADMIN_API, "editMessageText", chat_id=chat, message_id=mid,
                     text=f"✅ Файл выдан покупателю <code>{buyer}</code>", parse_mode="HTML")
+                return
             else:
                 api(ADMIN_API, "sendMessage", chat_id=chat, text="⚠️ Файл не найден: " + ZIP_PATH)
         elif data.startswith("no_"):
