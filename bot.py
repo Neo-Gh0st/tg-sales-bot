@@ -31,6 +31,9 @@ def save_json(path, data):
 state = load_json(STATE_FILE_P, {})
 
 def get_admin():
+    env = os.environ.get("ADMIN_ID")
+    if env:
+        return int(env)
     try:
         with open(ADMIN_FILE, encoding="utf-8") as f:
             return int(f.read().strip())
