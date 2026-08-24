@@ -22,6 +22,24 @@ def api(method, **kw):
 def send(chat_id, text, **kw):
     return api("sendMessage", chat_id=chat_id, text=text, parse_mode="HTML", **kw)
 
+INVOICE = {
+    "ru": {"title": "20 n8n-автоматизаций",
+           "description": "AI-сценарии, мониторинг цен и сайтов, лиды с сайта, отчёты через GPT, бэкапы. Готовая логика — импорт за 2 минуты. Экономия 60+ часов сборки."},
+    "uk": {"title": "20 n8n-автоматизацій",
+           "description": "AI-сценарії, моніторинг цін і сайтів, ліди з сайту, звіти через GPT, бекапи. Готова логіка — імпорт за 2 хвилини. Економія 60+ годин збірки."},
+    "en": {"title": "20 n8n automations pack",
+           "description": "AI scenarios, price & uptime monitoring, website leads, GPT reports, backups. Pre-built logic — 2-minute import. Saves 60+ hours of building."},
+}
+
+def invoice_for(lang_code):
+    return INVOICE.get((lang_code or "ru")[:2], INVOICE["ru"])
+
+def send_invoice(chat_id, lang_code):
+    inv = invoice_for(lang_code)
+    api("sendInvoice", chat_id=chat_id, title=inv["title"], description=inv["description"],
+        payload="n8n_pack_v1", provider_token="", currency="XTR",
+        prices=[{"label": "20 workflow + инструкция", "amount": STARS}])
+
 def kb(rows):
     return {"inline_keyboard": [[{"text": t, "callback_data": d} for t, d in r] for r in rows]}
 
@@ -58,10 +76,7 @@ def handle(u):
         text = msg.get("text", "")
 
         if text == "/start":
-            api("sendInvoice", chat_id=chat, title="20 готовых n8n-автоматизаций",
-                description="AI-сценарии, мониторинг, лиды, отчёты, бэкапы. Импорт за 2 минуты.",
-                payload="n8n_pack_v1", provider_token="", currency="XTR",
-                prices=[{"label": "Пак из 20 n8n workflow", "amount": STARS}])
+            send_invoice(chat, msg.get("from", {}).get("language_code"))
         elif text == "/stats" and chat == ADMIN_ID:
             try:
                 log = json.load(open(LOG, encoding="utf-8"))
@@ -70,10 +85,7 @@ def handle(u):
             send(chat, f"📊 Продаж выдано: {log.get('sales', 0)}")
 
     if cb and cb["data"] == "buy":
-        api("sendInvoice", chat_id=cb["from"]["id"], title="20 готовых n8n-автоматизаций",
-            description="AI-сценарии, мониторинг, лиды, отчёты, бэкапы. Импорт за 2 минуты.",
-            payload="n8n_pack_v1", provider_token="", currency="XTR",
-            prices=[{"label": "Пак из 20 n8n workflow", "amount": STARS}])
+        send_invoice(cb["from"]["id"], cb["from"].get("language_code"))
 
 def main():
     print("Stars bot started. Polling...", flush=True)
