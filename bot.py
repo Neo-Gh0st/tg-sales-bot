@@ -161,14 +161,11 @@ def admin_handle(u):
             else:
                 api(SALES_API, "sendDocument", chat_id=buyer, document=ZIP_URL,
                     caption="🎉 Спасибо за покупку! Внутри 20 workflow + инструкция по установке.")
-                log = load_json(SALES_LOG, {"sales": 0})
-                log["sales"] = log.get("sales", 0) + 1
-                save_json(SALES_LOG, log)
-                api(ADMIN_API, "editMessageText", chat_id=chat, message_id=mid,
-                    text=f"✅ Файл выдан покупателю <code>{buyer}</code>", parse_mode="HTML")
-                return
-            else:
-                api(ADMIN_API, "sendMessage", chat_id=chat, text="⚠️ Файл не найден: " + ZIP_PATH)
+            log = load_json(SALES_LOG, {"sales": 0})
+            log["sales"] = log.get("sales", 0) + 1
+            save_json(SALES_LOG, log)
+            api(ADMIN_API, "editMessageText", chat_id=chat, message_id=mid,
+                text=f"✅ Файл выдан покупателю <code>{buyer}</code>", parse_mode="HTML")
         elif data.startswith("no_"):
             buyer = int(data.split("_")[1])
             send_sales(buyer, "❌ Оплата не подтверждена. Если ты точно оплатил — напиши администратору.")
